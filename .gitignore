@@ -216,3 +216,22 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+ 
+ # ==============================
+# FedMed project-specific files
+# ==============================
+
+# Generated synthetic/medical datasets
+datasets/
+
+# Trained model checkpoints
+models/checkpoints/
+
+# Training outputs
+*.pt
+*.pth
+*.ckpt
+
+# Logs
+logs/
+*.log
