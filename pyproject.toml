@@ -1,0 +1,53 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fedmed"
+version = "0.1.0"
+description = "FedMed Cross-Silo Federated Learning Engine"
+requires-python = ">=3.12"
+
+dependencies = [
+    "flwr[simulation]"
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["federated"]
+
+[tool.flwr.app]
+publisher = "fedmed"
+
+[tool.flwr.app.components]
+serverapp = "federated.server.server_app:app"
+clientapp = "federated.clients.client_app:app"
+
+[tool.flwr.app.config]
+num-server-rounds = 3
+local-epochs = 1
+batch-size = 1
+learning-rate = 0.001
+
+
+#######################################################################
+# CONFIGURATION MIGRATION NOTICE:
+#
+# What was previously called "federation config" for SuperLink
+# connections in pyproject.toml has been renamed and moved.
+#
+# These settings are now **SuperLink connection configuration**
+# and are defined in the Flower configuration file.
+#
+# The entries below are commented out intentionally and are kept
+# only as a migration reference.
+#
+# Docs: https://flower.ai/docs/framework/ref-flower-configuration.html
+#######################################################################
+
+# [tool.flwr.federations]
+# default = "local-simulation"
+
+# [tool.flwr.federations.local-simulation]
+# options.num-supernodes = 3
+# options.backend.client-resources.num-cpus = 1
+# options.backend.client-resources.num-gpus = 0.0
