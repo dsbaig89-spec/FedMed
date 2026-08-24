@@ -1,0 +1,12 @@
+{
+    "experiment": "FedMed Federated Learning",
+    "strategy": "FedAvg",
+    "hospitals": [
+        "Hospital A",
+        "Hospital B",
+        "Hospital C"
+    ],
+    "rounds": [],
+    "best_dice": null,
+    "best_iou": null
+}
