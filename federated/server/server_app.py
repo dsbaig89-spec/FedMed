@@ -1,13 +1,9 @@
-from flwr.app import (
-    ArrayRecord,
-    Context,
-)
+import os
 
-from flwr.serverapp import (
-    Grid,
-    ServerApp,
-)
+import torch
 
+from flwr.app import ArrayRecord, Context
+from flwr.serverapp import Grid, ServerApp
 from flwr.serverapp.strategy import FedAvg
 
 from models.unet import UNet3D
@@ -19,15 +15,11 @@ app = ServerApp()
 @app.main()
 def main(
     grid: Grid,
-    context: Context
+    context: Context,
 ):
 
     print("\n" + "=" * 60)
-
-    print(
-        "FedMed Federated Learning Server"
-    )
-
+    print("FedMed Federated Learning Server")
     print("=" * 60)
 
     # --------------------------------------
@@ -84,6 +76,58 @@ def main(
         num_rounds=num_rounds,
     )
 
+    # --------------------------------------
+    # Save final global model
+    # --------------------------------------
+
+    print(
+        "\nSaving final federated model..."
+    )
+
+    final_state_dict = (
+        result.arrays.to_torch_state_dict()
+    )
+
+    checkpoint_dir = (
+        "models/checkpoints"
+    )
+
+    os.makedirs(
+        checkpoint_dir,
+        exist_ok=True
+    )
+
+    checkpoint_path = os.path.join(
+        checkpoint_dir,
+        "federated_global.pt"
+    )
+
+    torch.save(
+        final_state_dict,
+        checkpoint_path
+    )
+
+    # --------------------------------------
+    # Verify checkpoint
+    # --------------------------------------
+
+    file_size = os.path.getsize(
+        checkpoint_path
+    )
+
+    print(
+        f"\nGlobal model saved to:"
+    )
+
+    print(
+        checkpoint_path
+    )
+
+    print(
+        f"Checkpoint size: "
+        f"{file_size / (1024 * 1024):.2f} MB"
+    )
+
     print(
         "\n" + "=" * 60
     )
@@ -92,8 +136,24 @@ def main(
         "Federated training completed!"
     )
 
+    print("=" * 60)
+
+    # --------------------------------------
+    # Print Flower result summary
+    # --------------------------------------
+
     print(
-        "=" * 60
+        "\nFederated training metrics:"
     )
 
-    print(result)
+    print(
+        result.train_metrics_clientapp
+    )
+
+    print(
+        "\nFederated evaluation metrics:"
+    )
+
+    print(
+        result.evaluate_metrics_clientapp
+    )
