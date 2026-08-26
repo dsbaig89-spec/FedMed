@@ -18,16 +18,16 @@ from federated.common.federated_utils import (
 GLOBAL_MODEL = "models/checkpoints/federated_global.pt"
 
 HOSPITALS = {
-    "A": "datasets/hospital_a",
-    "B": "datasets/hospital_b",
-    "C": "datasets/hospital_c",
+    "Hospital A": "datasets/hospital_a",
+    "Hospital B": "datasets/hospital_b",
+    "Hospital C": "datasets/hospital_c",
 }
 
 
-def evaluate_hospital(model, hospital_path):
+def evaluate_hospital(model, dataset_path):
 
     dataset = MRISegmentationDataset(
-        hospital_path
+        dataset_path
     )
 
     loader = DataLoader(
@@ -92,15 +92,9 @@ def main():
 
     if not os.path.exists(GLOBAL_MODEL):
 
-        print(
-            "\nFederated global model not found:"
-        )
-
+        print("\nERROR:")
+        print("Federated global model not found:")
         print(GLOBAL_MODEL)
-
-        print(
-            "\nRun federated training first."
-        )
 
         return
 
@@ -111,7 +105,8 @@ def main():
         map_location=DEVICE
     )
 
-    if "model_state_dict" in checkpoint:
+    if isinstance(checkpoint, dict) and \
+            "model_state_dict" in checkpoint:
 
         model.load_state_dict(
             checkpoint["model_state_dict"]
@@ -125,11 +120,15 @@ def main():
 
     results = {}
 
-    for hospital, path in HOSPITALS.items():
+    for hospital, dataset_path in HOSPITALS.items():
+
+        print(
+            f"\nEvaluating {hospital}..."
+        )
 
         loss, dice, iou = evaluate_hospital(
             model,
-            path
+            dataset_path
         )
 
         results[hospital] = {
@@ -139,19 +138,19 @@ def main():
         }
 
         print(
-            f"\nHospital {hospital}"
+            f"{hospital}"
         )
 
         print(
-            f"Loss: {loss:.4f}"
+            f"  Loss : {loss:.4f}"
         )
 
         print(
-            f"Dice: {dice:.4f}"
+            f"  Dice : {dice:.4f}"
         )
 
         print(
-            f"IoU : {iou:.4f}"
+            f"  IoU  : {iou:.4f}"
         )
 
     average_dice = sum(
@@ -164,11 +163,17 @@ def main():
         for result in results.values()
     ) / len(results)
 
+    average_loss = sum(
+        result["loss"]
+        for result in results.values()
+    ) / len(results)
+
     output = {
         "experiment": "FedMed Federated Learning",
         "strategy": "FedAvg",
         "device": str(DEVICE),
         "hospital_results": results,
+        "average_loss": average_loss,
         "average_dice": average_dice,
         "average_iou": average_iou
     }
@@ -178,8 +183,12 @@ def main():
         exist_ok=True
     )
 
+    output_file = (
+        "results/federated_evaluation.json"
+    )
+
     with open(
-        "results/federated_evaluation.json",
+        output_file,
         "w"
     ) as file:
 
@@ -190,24 +199,24 @@ def main():
         )
 
     print("\n" + "=" * 60)
-
-    print(
-        f"Average Dice: {average_dice:.4f}"
-    )
-
-    print(
-        f"Average IoU : {average_iou:.4f}"
-    )
-
-    print(
-        "\nEvaluation saved to:"
-    )
-
-    print(
-        "results/federated_evaluation.json"
-    )
-
+    print("FEDERATED EVALUATION COMPLETE")
     print("=" * 60)
+
+    print(
+        f"Average Loss : {average_loss:.4f}"
+    )
+
+    print(
+        f"Average Dice : {average_dice:.4f}"
+    )
+
+    print(
+        f"Average IoU  : {average_iou:.4f}"
+    )
+
+    print(
+        f"\nSaved to: {output_file}"
+    )
 
 
 if __name__ == "__main__":
