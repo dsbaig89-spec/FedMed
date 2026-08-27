@@ -1,0 +1,25 @@
+{
+    "experiment": "FedMed Federated Learning",
+    "strategy": "FedAvg",
+    "device": "cpu",
+    "hospital_results": {
+        "Hospital A": {
+            "loss": 0.9469860076904297,
+            "dice": 0.7465435206890106,
+            "iou": 0.5996240392327309
+        },
+        "Hospital B": {
+            "loss": 0.9369010001420974,
+            "dice": 0.7631592124700546,
+            "iou": 0.6192344188690185
+        },
+        "Hospital C": {
+            "loss": 0.9510059267282486,
+            "dice": 0.7430119633674621,
+            "iou": 0.5934521228075027
+        }
+    },
+    "average_loss": 0.9449643115202586,
+    "average_dice": 0.7509048988421757,
+    "average_iou": 0.6041035269697507
+}
