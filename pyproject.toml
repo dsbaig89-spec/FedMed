@@ -27,7 +27,8 @@ num-server-rounds = 3
 local-epochs = 1
 batch-size = 1
 learning-rate = 0.001
-
+dp-max-norm = 1.0
+dp-noise-multiplier = 0.01
 
 #######################################################################
 # CONFIGURATION MIGRATION NOTICE:
