@@ -1,0 +1,100 @@
+{
+    "experiment": "Federated Learning with Differential Privacy",
+    "hospitals": [
+        "A",
+        "B",
+        "C"
+    ],
+    "rounds": 3,
+    "local_epochs": 1,
+    "learning_rate": 0.001,
+    "dp_max_norm": 1.0,
+    "dp_noise_multiplier": 0.01,
+    "history": [
+        {
+            "round": 1,
+            "average_dice": 0.2009325124323368,
+            "average_iou": 0.12008143868297338,
+            "hospitals": [
+                {
+                    "hospital": "A",
+                    "train_loss": 0.9602744251489639,
+                    "dice": 0.08506689462810754,
+                    "iou": 0.0450719409622252,
+                    "samples": 20
+                },
+                {
+                    "hospital": "B",
+                    "train_loss": 0.9538258343935013,
+                    "dice": 0.3783768318593502,
+                    "iou": 0.23914988934993744,
+                    "samples": 20
+                },
+                {
+                    "hospital": "C",
+                    "train_loss": 0.9643024206161499,
+                    "dice": 0.13935381080955267,
+                    "iou": 0.07602248573675752,
+                    "samples": 20
+                }
+            ]
+        },
+        {
+            "round": 2,
+            "average_dice": 0.57778932005167,
+            "average_iou": 0.42085833077629403,
+            "hospitals": [
+                {
+                    "hospital": "A",
+                    "train_loss": 0.960203891992569,
+                    "dice": 0.7140957951545716,
+                    "iou": 0.5636610820889473,
+                    "samples": 20
+                },
+                {
+                    "hospital": "B",
+                    "train_loss": 0.9521194636821747,
+                    "dice": 0.5338089689612389,
+                    "iou": 0.3738242484629154,
+                    "samples": 20
+                },
+                {
+                    "hospital": "C",
+                    "train_loss": 0.9619046866893768,
+                    "dice": 0.48546319603919985,
+                    "iou": 0.3250896617770195,
+                    "samples": 20
+                }
+            ]
+        },
+        {
+            "round": 3,
+            "average_dice": 0.3796352922916412,
+            "average_iou": 0.24441601100067298,
+            "hospitals": [
+                {
+                    "hospital": "A",
+                    "train_loss": 0.9588170051574707,
+                    "dice": 0.3552099145948887,
+                    "iou": 0.2268186118453741,
+                    "samples": 20
+                },
+                {
+                    "hospital": "B",
+                    "train_loss": 0.9491782456636428,
+                    "dice": 0.4323023810982704,
+                    "iou": 0.2883786756545305,
+                    "samples": 20
+                },
+                {
+                    "hospital": "C",
+                    "train_loss": 0.9609933823347092,
+                    "dice": 0.3513935811817646,
+                    "iou": 0.21805074550211428,
+                    "samples": 20
+                }
+            ]
+        }
+    ],
+    "checkpoint": "models\\checkpoints\\dp_federated_global.pt"
+}
