@@ -1,4 +1,3 @@
-
 import torch
 
 from flwr.app import (
@@ -12,6 +11,10 @@ from flwr.app import (
 from flwr.clientapp import ClientApp
 
 from models.unet import UNet3D
+
+from privacy.differential_privacy import (
+    DifferentialPrivacy,
+)
 
 from federated.common.federated_utils import (
     DEVICE,
@@ -73,6 +76,20 @@ def train(
         )
     )
 
+    dp_max_norm = float(
+        context.run_config.get(
+            "dp-max-norm",
+            1.0
+        )
+    )
+
+    dp_noise_multiplier = float(
+        context.run_config.get(
+            "dp-noise-multiplier",
+            0.01
+        )
+    )
+
     # --------------------------------------
     # Load PRIVATE hospital dataset
     # --------------------------------------
@@ -106,6 +123,15 @@ def train(
         global_state
     )
 
+    # Keep a copy of the global parameters.
+    # DP will be applied to the local model
+    # update relative to these parameters.
+
+    global_state = {
+        key: value.detach().clone()
+        for key, value in global_state.items()
+    }
+
     # --------------------------------------
     # Local training
     # --------------------------------------
@@ -136,11 +162,85 @@ def train(
     )
 
     # --------------------------------------
-    # Send model update
+    # Calculate local model update
+    # --------------------------------------
+
+    local_state = model.state_dict()
+
+    update = []
+
+    parameter_keys = []
+
+    for key in global_state:
+
+        if not torch.is_floating_point(
+            global_state[key]
+        ):
+            continue
+
+        update.append(
+            (
+                local_state[key].detach()
+                - global_state[key]
+            )
+        )
+
+        parameter_keys.append(key)
+
+    # --------------------------------------
+    # Differential Privacy
+    # --------------------------------------
+
+    dp = DifferentialPrivacy(
+        max_norm=dp_max_norm,
+        noise_multiplier=dp_noise_multiplier,
+    )
+
+    protected_update = dp.protect(
+        update
+    )
+
+    print(
+        f"[HOSPITAL {hospital_id}] "
+        f"Differential Privacy applied"
+    )
+
+    print(
+        f"[HOSPITAL {hospital_id}] "
+        f"DP max norm={dp_max_norm}"
+    )
+
+    print(
+        f"[HOSPITAL {hospital_id}] "
+        f"DP noise multiplier="
+        f"{dp_noise_multiplier}"
+    )
+
+    # --------------------------------------
+    # Reconstruct protected model
+    # --------------------------------------
+
+    protected_state = {
+        key: value.detach().clone()
+        for key, value in local_state.items()
+    }
+
+    for key, protected in zip(
+        parameter_keys,
+        protected_update
+    ):
+
+        protected_state[key] = (
+            global_state[key]
+            + protected
+        )
+
+    # --------------------------------------
+    # Send protected model update
     # --------------------------------------
 
     arrays = ArrayRecord(
-        model.state_dict()
+        protected_state
     )
 
     metrics = MetricRecord(
@@ -148,9 +248,19 @@ def train(
             "train_loss": float(
                 train_loss
             ),
-            "dice": float(dice),
-            "iou": float(iou),
-            "num-examples": len(dataset),
+            "dice": float(
+                dice
+            ),
+            "iou": float(
+                iou
+            ),
+            "num-examples": len(
+                dataset
+            ),
+            "dp_enabled": 1.0,
+            "dp_max_norm": dp_max_norm,
+            "dp_noise_multiplier":
+                dp_noise_multiplier,
         }
     )
 
@@ -163,7 +273,7 @@ def train(
 
     print(
         f"[HOSPITAL {hospital_id}] "
-        f"Sending model update..."
+        f"Sending protected model update..."
     )
 
     return Message(
@@ -222,7 +332,9 @@ def evaluate(
             "loss": float(loss),
             "dice": float(dice),
             "iou": float(iou),
-            "num-examples": len(dataset),
+            "num-examples": len(
+                dataset
+            ),
         }
     )
 
