@@ -1,0 +1,25 @@
+{
+    "experiment": "FedMed Federated Learning with Differential Privacy",
+    "strategy": "FedAvg + Differential Privacy",
+    "device": "cpu",
+    "hospital_results": {
+        "Hospital A": {
+            "loss": 0.9816486299037933,
+            "dice": 0.018483185023069382,
+            "iou": 0.009356689453125
+        },
+        "Hospital B": {
+            "loss": 0.9781527668237686,
+            "dice": 0.022016014205291867,
+            "iou": 0.01115264892578125
+        },
+        "Hospital C": {
+            "loss": 0.9831252545118332,
+            "dice": 0.016975367348641156,
+            "iou": 0.00858001708984375
+        }
+    },
+    "average_loss": 0.9809755504131318,
+    "average_dice": 0.019158188859000804,
+    "average_iou": 0.009696451822916667
+}

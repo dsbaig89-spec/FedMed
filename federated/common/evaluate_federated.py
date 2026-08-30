@@ -15,7 +15,7 @@ from federated.common.federated_utils import (
 )
 
 
-GLOBAL_MODEL = "models/checkpoints/federated_global.pt"
+GLOBAL_MODEL = "models/checkpoints/dp_federated_global.pt"
 
 HOSPITALS = {
     "Hospital A": "datasets/hospital_a",
@@ -169,8 +169,8 @@ def main():
     ) / len(results)
 
     output = {
-        "experiment": "FedMed Federated Learning",
-        "strategy": "FedAvg",
+        "experiment": "FedMed Federated Learning with Differential Privacy",
+        "strategy": "FedAvg + Differential Privacy",
         "device": str(DEVICE),
         "hospital_results": results,
         "average_loss": average_loss,
@@ -184,9 +184,9 @@ def main():
     )
 
     output_file = (
-        "results/federated_evaluation.json"
-    )
-
+    "results/dp_federated_evaluation.json"
+)
+    
     with open(
         output_file,
         "w"
