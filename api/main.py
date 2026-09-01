@@ -62,3 +62,13 @@ def get_hospitals():
         }
 
     return output
+@app.get("/training/status")
+def training_status():
+    return {
+        "status": "completed",
+        "rounds": 3,
+        "hospitals": 3,
+        "device": "cpu",
+        "federated": True,
+        "differential_privacy": True,
+    }
