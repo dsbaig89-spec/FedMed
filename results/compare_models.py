@@ -2,54 +2,34 @@ import json
 import os
 
 
-CENTRALIZED_HISTORY = (
-    "baseline/training_history.json"
-)
+CENTRALIZED_HISTORY = "baseline/training_history.json"
+FEDERATED_RESULTS = "results/federated_evaluation.json"
+DP_RESULTS = "results/dp_federated_evaluation.json"
 
-FEDERATED_RESULTS = (
-    "results/federated_evaluation.json"
-)
+OUTPUT_FILE = "results/model_comparison.json"
 
-OUTPUT_FILE = (
-    "results/centralized_vs_federated.json"
-)
+
+def load_json(path):
+    with open(path, "r") as file:
+        return json.load(file)
 
 
 def main():
 
-    if not os.path.exists(
-        CENTRALIZED_HISTORY
-    ):
-
-        print(
-            "Centralized training history not found."
-        )
-
-        return
-
-    if not os.path.exists(
-        FEDERATED_RESULTS
-    ):
-
-        print(
-            "Federated evaluation not found."
-        )
-
-        return
-
-    with open(
+    required_files = [
         CENTRALIZED_HISTORY,
-        "r"
-    ) as file:
-
-        centralized = json.load(file)
-
-    with open(
         FEDERATED_RESULTS,
-        "r"
-    ) as file:
+        DP_RESULTS,
+    ]
 
-        federated = json.load(file)
+    for path in required_files:
+        if not os.path.exists(path):
+            print(f"Missing: {path}")
+            return
+
+    centralized = load_json(CENTRALIZED_HISTORY)
+    federated = load_json(FEDERATED_RESULTS)
+    dp = load_json(DP_RESULTS)
 
     centralized_dice = max(
         centralized["validation_dice"]
@@ -59,13 +39,11 @@ def main():
         centralized["validation_iou"]
     )
 
-    federated_dice = (
-        federated["average_dice"]
-    )
+    federated_dice = federated["average_dice"]
+    federated_iou = federated["average_iou"]
 
-    federated_iou = (
-        federated["average_iou"]
-    )
+    dp_dice = dp["average_dice"]
+    dp_iou = dp["average_iou"]
 
     comparison = {
 
@@ -79,16 +57,23 @@ def main():
             "iou": federated_iou
         },
 
-        "difference": {
-            "dice": (
-                federated_dice
-                - centralized_dice
-            ),
+        "federated_dp": {
+            "dice": dp_dice,
+            "iou": dp_iou
+        },
 
-            "iou": (
-                federated_iou
-                - centralized_iou
-            )
+        "difference": {
+            "federated_vs_centralized_dice":
+                federated_dice - centralized_dice,
+
+            "federated_vs_centralized_iou":
+                federated_iou - centralized_iou,
+
+            "dp_vs_federated_dice":
+                dp_dice - federated_dice,
+
+            "dp_vs_federated_iou":
+                dp_iou - federated_iou
         }
     }
 
@@ -104,36 +89,25 @@ def main():
         )
 
     print("=" * 60)
-    print(
-        "CENTRALIZED VS FEDERATED"
-    )
+    print("FEDMED MODEL COMPARISON")
     print("=" * 60)
 
     print(
-        f"\nCentralized Dice : "
-        f"{centralized_dice:.4f}"
+        f"\nCentralized      Dice: {centralized_dice:.4f} "
+        f"IoU: {centralized_iou:.4f}"
     )
 
     print(
-        f"Federated Dice  : "
-        f"{federated_dice:.4f}"
+        f"Federated       Dice: {federated_dice:.4f} "
+        f"IoU: {federated_iou:.4f}"
     )
 
     print(
-        f"\nCentralized IoU  : "
-        f"{centralized_iou:.4f}"
+        f"Federated + DP  Dice: {dp_dice:.4f} "
+        f"IoU: {dp_iou:.4f}"
     )
 
-    print(
-        f"Federated IoU   : "
-        f"{federated_iou:.4f}"
-    )
-
-    print(
-        "\nSaved:"
-    )
-
-    print(OUTPUT_FILE)
+    print(f"\nSaved: {OUTPUT_FILE}")
 
 
 if __name__ == "__main__":

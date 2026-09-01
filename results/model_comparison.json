@@ -1,0 +1,20 @@
+{
+    "centralized": {
+        "dice": 0.8255607932806015,
+        "iou": 0.7046530991792679
+    },
+    "federated": {
+        "dice": 0.7509048988421757,
+        "iou": 0.6041035269697507
+    },
+    "federated_dp": {
+        "dice": 0.019158188859000804,
+        "iou": 0.009696451822916667
+    },
+    "difference": {
+        "federated_vs_centralized_dice": -0.0746558944384258,
+        "federated_vs_centralized_iou": -0.10054957220951721,
+        "dp_vs_federated_dice": -0.7317467099831749,
+        "dp_vs_federated_iou": -0.594407075146834
+    }
+}
