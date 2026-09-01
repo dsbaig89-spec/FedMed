@@ -71,4 +71,11 @@ def training_status():
         "device": "cpu",
         "federated": True,
         "differential_privacy": True,
+    } 
+@app.post("/training/start")
+def start_training():
+    return {
+        "message": "Training request received",
+        "status": "ready",
+        "note": "Training can be started from the FedMed training pipeline."
     }
