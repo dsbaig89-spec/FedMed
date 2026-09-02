@@ -79,3 +79,12 @@ def start_training():
         "status": "ready",
         "note": "Training can be started from the FedMed training pipeline."
     }
+    
+@app.get("/privacy/status")
+def privacy_status():
+    return {
+        "differential_privacy": True,
+        "max_norm": 1.0,
+        "noise_multiplier": 0.01,
+        "status": "configured"
+    }
