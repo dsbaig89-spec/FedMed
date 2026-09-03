@@ -1,122 +1,89 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import axios from "axios";
+import "./App.css";
+
+const API = "http://127.0.0.1:8000";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [metrics, setMetrics] = useState(null);
+  const [hospitals, setHospitals] = useState(null);
+  const [privacy, setPrivacy] = useState(null);
+  const [training, setTraining] = useState(null);
+
+  useEffect(() => {
+    axios.get(`${API}/metrics`).then((res) => setMetrics(res.data));
+    axios.get(`${API}/hospitals`).then((res) => setHospitals(res.data));
+    axios.get(`${API}/privacy/status`).then((res) => setPrivacy(res.data));
+    axios.get(`${API}/training/status`).then((res) => setTraining(res.data));
+  }, []);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="dashboard">
+      <header>
+        <h1>FedMed</h1>
+        <p>Privacy-Preserving Federated Medical Image Segmentation</p>
+      </header>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+      <section className="cards">
+        <div className="card">
+          <h3>Training Status</h3>
+          <strong>{training?.status || "Loading..."}</strong>
+          <p>{training?.rounds || 0} Federated Rounds</p>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
+
+        <div className="card">
+          <h3>Hospitals</h3>
+          <strong>{training?.hospitals || 0}</strong>
+          <p>Participating Hospitals</p>
+        </div>
+
+        <div className="card">
+          <h3>Differential Privacy</h3>
+          <strong>{privacy?.differential_privacy ? "Enabled" : "Disabled"}</strong>
+          <p>Noise: {privacy?.noise_multiplier ?? "-"}</p>
         </div>
       </section>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      <section className="panel">
+        <h2>Hospital Network</h2>
+
+        {hospitals &&
+          Object.entries(hospitals).map(([name, data]) => (
+            <div className="hospital" key={name}>
+              <span>{name}</span>
+              <span>{data.status}</span>
+              <span>{data.samples} samples</span>
+            </div>
+          ))}
+      </section>
+
+      <section className="panel">
+        <h2>Model Performance</h2>
+
+        {metrics && (
+          <div className="metrics">
+            <div>
+              <h3>Centralized</h3>
+              <p>Dice: {metrics.centralized.dice}</p>
+              <p>IoU: {metrics.centralized.iou}</p>
+            </div>
+
+            <div>
+              <h3>Federated</h3>
+              <p>Dice: {metrics.federated.dice}</p>
+              <p>IoU: {metrics.federated.iou}</p>
+            </div>
+
+            <div>
+              <h3>Federated + DP</h3>
+              <p>Dice: {metrics.federated_dp.dice}</p>
+              <p>IoU: {metrics.federated_dp.iou}</p>
+            </div>
+          </div>
+        )}
+      </section>
+    </div>
+  );
 }
 
-export default App
+export default App;
