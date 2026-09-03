@@ -88,3 +88,20 @@ def privacy_status():
         "noise_multiplier": 0.01,
         "status": "configured"
     }
+    
+@app.get("/metrics")
+def metrics():
+    return {
+        "centralized": {
+            "dice": 0.8256,
+            "iou": 0.7047
+        },
+        "federated": {
+            "dice": 0.7509,
+            "iou": 0.6041
+        },
+        "federated_dp": {
+            "dice": 0.0192,
+            "iou": 0.0097
+        }
+    }    
