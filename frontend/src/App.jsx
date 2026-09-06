@@ -9,9 +9,13 @@ function App() {
   const [hospitals, setHospitals] = useState(null);
   const [privacy, setPrivacy] = useState(null);
   const [training, setTraining] = useState(null);
+
   const [selectedHospital, setSelectedHospital] = useState(null);
+  const [selectedModel, setSelectedModel] = useState(null);
+
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
+  const [trainingStarted, setTrainingStarted] = useState(false);
 
   const loadDashboard = async () => {
     setLoading(true);
@@ -42,16 +46,31 @@ function App() {
 
   const startTraining = async () => {
     try {
+      setTrainingStarted(true);
+
       const response = await axios.post(`${API}/training/start`);
+
       setMessage(response.data.message);
+
+      setTimeout(() => {
+        setTrainingStarted(false);
+      }, 3000);
     } catch {
+      setTrainingStarted(false);
       setMessage("Unable to start training");
     }
+  };
+
+  const handleModelClick = (model) => {
+    setSelectedModel(
+      selectedModel === model ? null : model
+    );
   };
 
   return (
     <div className="dashboard">
 
+      {/* HEADER */}
       <header className="topbar">
         <div>
           <h1>🧠 FedMed</h1>
@@ -59,49 +78,78 @@ function App() {
         </div>
 
         <div className="header-actions">
+
           <span className="api-status">
             ● API Connected
           </span>
 
-          <button className="refresh-btn" onClick={loadDashboard}>
-            ↻ Refresh
+          <button
+            className="refresh-btn"
+            onClick={loadDashboard}
+            disabled={loading}
+          >
+            {loading ? "⟳ Refreshing..." : "↻ Refresh"}
           </button>
 
-          <button className="train-btn" onClick={startTraining}>
-            ▶ Start Training
+          <button
+            className="train-btn"
+            onClick={startTraining}
+            disabled={trainingStarted}
+          >
+            {trainingStarted
+              ? "⏳ Training..."
+              : "▶ Start Training"}
           </button>
+
         </div>
       </header>
 
+
+      {/* NOTIFICATION */}
       {message && (
         <div className="notification">
           {message}
         </div>
       )}
 
+
+      {/* HERO */}
       <section className="hero">
+
         <div>
-          <span className="badge">FEDERATED LEARNING</span>
-          <h2>Medical AI Training Dashboard</h2>
+          <span className="badge">
+            FEDERATED LEARNING
+          </span>
+
+          <h2>
+            Medical AI Training Dashboard
+          </h2>
+
           <p>
-            Train MRI segmentation models across hospitals without
-            sharing sensitive patient data.
+            Train MRI segmentation models across hospitals
+            without sharing sensitive patient data.
           </p>
         </div>
 
         <div className="hero-icon">
           🏥
         </div>
+
       </section>
 
+
+      {/* SUMMARY CARDS */}
       <section className="cards">
 
         <div className="card">
           <div className="card-icon">⚡</div>
+
           <h3>Training Status</h3>
 
           <strong>
-            {loading ? "Loading..." : training?.status}
+            {loading
+              ? "Loading..."
+              : training?.status}
           </strong>
 
           <p>
@@ -109,19 +157,25 @@ function App() {
           </p>
         </div>
 
+
         <div className="card">
           <div className="card-icon">🏥</div>
+
           <h3>Hospital Network</h3>
 
           <strong>
             {training?.hospitals || 0}
           </strong>
 
-          <p>Participating hospitals</p>
+          <p>
+            Participating hospitals
+          </p>
         </div>
+
 
         <div className="card">
           <div className="card-icon">🔐</div>
+
           <h3>Differential Privacy</h3>
 
           <strong className="privacy">
@@ -131,124 +185,329 @@ function App() {
           </strong>
 
           <p>
-            Noise multiplier: {privacy?.noise_multiplier ?? "-"}
+            Noise multiplier:{" "}
+            {privacy?.noise_multiplier ?? "-"}
           </p>
         </div>
 
+
         <div className="card">
           <div className="card-icon">💻</div>
+
           <h3>Compute Device</h3>
 
           <strong>
             {training?.device || "-"}
           </strong>
 
-          <p>Training environment</p>
+          <p>
+            Training environment
+          </p>
         </div>
 
       </section>
 
+
+      {/* HOSPITAL NETWORK */}
       <section className="panel">
+
         <div className="section-title">
           <div>
             <h2>🏥 Hospital Network</h2>
-            <p>Select a hospital to view its information</p>
+
+            <p>
+              Select a hospital to view its information
+            </p>
           </div>
         </div>
+
 
         <div className="hospital-grid">
 
           {hospitals &&
-            Object.entries(hospitals).map(([name, data]) => (
+            Object.entries(hospitals).map(
+              ([name, data]) => (
 
-              <button
-                className={`hospital-card ${
-                  selectedHospital === name ? "selected" : ""
-                }`}
-                key={name}
-                onClick={() => setSelectedHospital(name)}
-              >
+                <button
+                  className={`hospital-card ${
+                    selectedHospital === name
+                      ? "selected"
+                      : ""
+                  }`}
+                  key={name}
+                  onClick={() =>
+                    setSelectedHospital(name)
+                  }
+                >
 
-                <div className="hospital-top">
-                  <span className="hospital-icon">🏥</span>
+                  <div className="hospital-top">
 
-                  <span className="online">
-                    ● {data.status}
-                  </span>
-                </div>
+                    <span className="hospital-icon">
+                      🏥
+                    </span>
 
-                <h3>{name}</h3>
+                    <span className="online">
+                      ● {data.status}
+                    </span>
 
-                <div className="sample-count">
-                  {data.samples}
-                  <span> samples</span>
-                </div>
+                  </div>
 
-                <p>Local medical dataset</p>
+                  <h3>{name}</h3>
 
-              </button>
+                  <div className="sample-count">
+                    {data.samples}
 
-            ))}
+                    <span>
+                      {" "}samples
+                    </span>
+                  </div>
+
+                  <p>
+                    Local medical dataset
+                  </p>
+
+                </button>
+              )
+            )}
 
         </div>
 
-        {selectedHospital && hospitals?.[selectedHospital] && (
 
-          <div className="hospital-detail">
+        {/* SELECTED HOSPITAL DETAILS */}
+        {selectedHospital &&
+          hospitals?.[selectedHospital] && (
 
-            <h3>
-              {selectedHospital} Details
-            </h3>
+            <div className="hospital-detail">
 
-            <p>
-              <strong>Status:</strong>{" "}
-              {hospitals[selectedHospital].status}
-            </p>
+              <div>
 
-            <p>
-              <strong>Samples:</strong>{" "}
-              {hospitals[selectedHospital].samples}
-            </p>
+                <span className="badge">
+                  SELECTED HOSPITAL
+                </span>
 
-            <p>
-              Patient data remains at the hospital.
-            </p>
+                <h3>
+                  {selectedHospital}
+                </h3>
 
-          </div>
-        )}
+                <p>
+                  This hospital participates in
+                  federated training. Patient data
+                  remains locally stored.
+                </p>
+
+              </div>
+
+
+              <div className="hospital-detail-stats">
+
+                <div>
+                  <span>Status</span>
+
+                  <strong>
+                    🟢{" "}
+                    {hospitals[selectedHospital].status}
+                  </strong>
+                </div>
+
+
+                <div>
+                  <span>Dataset</span>
+
+                  <strong>
+                    {hospitals[selectedHospital].samples}
+                    {" "}samples
+                  </strong>
+                </div>
+
+
+                <div>
+                  <span>Data Sharing</span>
+
+                  <strong>
+                    🔒 Protected
+                  </strong>
+                </div>
+
+              </div>
+
+
+              <button
+                className="refresh-btn"
+                onClick={() =>
+                  setSelectedHospital(null)
+                }
+              >
+                ✕ Close Details
+              </button>
+
+            </div>
+          )}
 
       </section>
 
+
+      {/* MODEL PERFORMANCE */}
       <section className="panel">
 
         <div className="section-title">
           <div>
-            <h2>📊 Model Performance</h2>
-            <p>Comparison of segmentation approaches</p>
+
+            <h2>
+              📊 Model Performance
+            </h2>
+
+            <p>
+              Click a model to highlight its performance
+            </p>
+
           </div>
         </div>
+
 
         {metrics && (
 
           <div className="performance">
 
-            <Metric
-              title="Centralized"
-              dice={metrics.centralized.dice}
-              iou={metrics.centralized.iou}
-            />
+            <button
+              className={`metric-card ${
+                selectedModel === "centralized"
+                  ? "selected"
+                  : ""
+              }`}
+              onClick={() =>
+                handleModelClick("centralized")
+              }
+            >
 
-            <Metric
-              title="Federated"
-              dice={metrics.federated.dice}
-              iou={metrics.federated.iou}
-            />
+              <Metric
+                title="Centralized"
+                dice={metrics.centralized.dice}
+                iou={metrics.centralized.iou}
+              />
 
-            <Metric
-              title="Federated + DP"
-              dice={metrics.federated_dp.dice}
-              iou={metrics.federated_dp.iou}
-            />
+            </button>
+
+
+            <button
+              className={`metric-card ${
+                selectedModel === "federated"
+                  ? "selected"
+                  : ""
+              }`}
+              onClick={() =>
+                handleModelClick("federated")
+              }
+            >
+
+              <Metric
+                title="Federated"
+                dice={metrics.federated.dice}
+                iou={metrics.federated.iou}
+              />
+
+            </button>
+
+
+            <button
+              className={`metric-card ${
+                selectedModel === "dp"
+                  ? "selected"
+                  : ""
+              }`}
+              onClick={() =>
+                handleModelClick("dp")
+              }
+            >
+
+              <Metric
+                title="Federated + DP"
+                dice={metrics.federated_dp.dice}
+                iou={metrics.federated_dp.iou}
+              />
+
+            </button>
+
+          </div>
+
+        )}
+
+
+        {/* MODEL DETAILS */}
+        {selectedModel && metrics && (
+
+          <div className="hospital-detail">
+
+            <div>
+
+              <span className="badge">
+                MODEL SELECTED
+              </span>
+
+              <h3>
+                {selectedModel === "centralized"
+                  ? "Centralized Model"
+                  : selectedModel === "federated"
+                  ? "Federated Model"
+                  : "Federated + Differential Privacy"}
+              </h3>
+
+              <p>
+                Performance details for the selected
+                segmentation approach.
+              </p>
+
+            </div>
+
+
+            <div className="hospital-detail-stats">
+
+              <div>
+                <span>Dice Score</span>
+
+                <strong>
+                  {selectedModel === "centralized"
+                    ? metrics.centralized.dice
+                    : selectedModel === "federated"
+                    ? metrics.federated.dice
+                    : metrics.federated_dp.dice}
+                </strong>
+              </div>
+
+
+              <div>
+                <span>IoU Score</span>
+
+                <strong>
+                  {selectedModel === "centralized"
+                    ? metrics.centralized.iou
+                    : selectedModel === "federated"
+                    ? metrics.federated.iou
+                    : metrics.federated_dp.iou}
+                </strong>
+              </div>
+
+
+              <div>
+                <span>Privacy</span>
+
+                <strong>
+                  {selectedModel === "dp"
+                    ? "🔐 Enabled"
+                    : "Standard"}
+                </strong>
+              </div>
+
+            </div>
+
+
+            <button
+              className="refresh-btn"
+              onClick={() =>
+                setSelectedModel(null)
+              }
+            >
+              ✕ Close Details
+            </button>
 
           </div>
 
@@ -256,31 +515,52 @@ function App() {
 
       </section>
 
+
+      {/* PRIVACY */}
       <section className="panel privacy-panel">
 
         <div>
-          <h2>🔐 Privacy Protection</h2>
+
+          <span className="badge">
+            PRIVACY
+          </span>
+
+          <h2>
+            🔐 Privacy Protection
+          </h2>
 
           <p>
-            Differential Privacy protects sensitive medical
-            information during federated model training.
+            Differential Privacy protects sensitive
+            medical information during federated
+            model training.
           </p>
+
         </div>
+
 
         <div className="privacy-info">
 
           <div>
             <span>Max Norm</span>
-            <strong>{privacy?.max_norm ?? "-"}</strong>
+
+            <strong>
+              {privacy?.max_norm ?? "-"}
+            </strong>
           </div>
+
 
           <div>
             <span>Noise Multiplier</span>
-            <strong>{privacy?.noise_multiplier ?? "-"}</strong>
+
+            <strong>
+              {privacy?.noise_multiplier ?? "-"}
+            </strong>
           </div>
+
 
           <div>
             <span>Protection</span>
+
             <strong>
               {privacy?.status || "Loading..."}
             </strong>
@@ -290,6 +570,8 @@ function App() {
 
       </section>
 
+
+      {/* FOOTER */}
       <footer>
         FedMed • Federated Medical Image Segmentation
       </footer>
@@ -298,38 +580,66 @@ function App() {
   );
 }
 
-function Metric({ title, dice, iou }) {
-  return (
-    <div className="metric-card">
 
+/* METRIC COMPONENT */
+function Metric({ title, dice, iou }) {
+
+  return (
+    <>
       <h3>{title}</h3>
 
       <div className="metric-row">
-        <span>Dice Score</span>
-        <strong>{dice}</strong>
+
+        <span>
+          Dice Score
+        </span>
+
+        <strong>
+          {dice}
+        </strong>
+
       </div>
 
+
       <div className="progress">
+
         <div
           className="progress-fill"
-          style={{ width: `${dice * 100}%` }}
+          style={{
+            width: `${dice * 100}%`,
+          }}
         />
+
       </div>
+
 
       <div className="metric-row">
-        <span>IoU Score</span>
-        <strong>{iou}</strong>
+
+        <span>
+          IoU Score
+        </span>
+
+        <strong>
+          {iou}
+        </strong>
+
       </div>
+
 
       <div className="progress">
+
         <div
           className="progress-fill"
-          style={{ width: `${iou * 100}%` }}
+          style={{
+            width: `${iou * 100}%`,
+          }}
         />
+
       </div>
 
-    </div>
+    </>
   );
 }
+
 
 export default App;
